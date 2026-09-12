@@ -1,3 +1,7 @@
+## ✅ Supabase مربوط
+
+هذه النسخة مربوطة مسبقًا بمشروع Supabase الخاص بتحويشتي. الجداول والحماية RLS وBucket الإيصالات تم تجهيزها. لا تستخدم أي Secret/Service Role key داخل ملفات GitHub Pages.
+
 # تحويشتي 💚
 
 تطبيق مالي شخصي عربي لإدارة:
@@ -29,17 +33,19 @@
 
 `https://USERNAME.github.io/tahweeshti/`
 
-## 2) إنشاء قاعدة Supabase
+## 2) Supabase — جاهز ✅
 
-1. أنشئ Project جديد على Supabase.
-2. افتح **SQL Editor**.
-3. انسخ محتوى `supabase/schema.sql` كاملًا وشغله مرة واحدة.
-4. من **Project Settings → API** انسخ:
-   - Project URL
-   - anon / publishable key
-5. افتح `config.js` وضعهما مكان القيم الافتراضية.
+تم ربط هذه النسخة مسبقًا بمشروع Supabase الخاص بتحويشتي، وتم إنشاء:
 
-> مهم: استخدم `anon` / `publishable key` فقط في الموقع. **لا تضع service_role key في GitHub أو المتصفح.** الحماية الفعلية تتم عبر RLS الموجود في `schema.sql`.
+- جدول `entries` للحركات
+- جدول `payments` للدفعات
+- حماية Row Level Security (RLS)
+- Bucket خاص `receipts` للإيصالات حتى 5MB
+- قيود تمنع تجاوز الدفعات لقيمة الدين
+
+ملف `config.js` يحتوي فقط على **Publishable Key** المسموح استخدامه في تطبيق الويب. لا تضف `service_role` أو `sb_secret` إلى GitHub نهائيًا.
+
+ملف `supabase/schema.sql` محفوظ فقط كنسخة من هيكل القاعدة إذا أردت نقل التطبيق إلى مشروع Supabase جديد لاحقًا.
 
 ## 3) تسجيل الدخول
 
