@@ -36,7 +36,11 @@
         <button class="btn primary full auth-submit" id="loginSubmit" type="submit"><span>إنشاء حساب</span><b>↗</b></button>
       </form>
       <div class="auth-switch"><span id="authSwitchText">عندك حساب؟</span> <button id="toggleAuthMode" class="link-btn" type="button">تسجيل الدخول</button></div>
-      <div class="auth-note">🔒 بدون إيميل وبدون تعقيد — فقط رمز من 4 أرقام على هذا الجهاز.</div>
+      <div class="auth-note">🔒 حساب واحد مشترك — بدون إيميل. نفس الرمز يفتح نفس البيانات من أي جهاز.</div>
+      <div class="auth-extra-actions">
+        <button id="authInstallBtn" class="btn secondary full hidden" type="button">⬇ تنزيل التطبيق</button>
+        <small class="auth-install-hint">ثبّت تحويشتي على الشاشة الرئيسية لفتح أسرع وتجربة أفضل.</small>
+      </div>
       <div id="authMessage" class="inline-message"></div>
     </section>
   </div>
@@ -66,7 +70,7 @@
             <span class="hero-label">صافي وضعك المالي</span>
             <strong id="netBalance" class="hero-amount">0 د.أ</strong>
             <div class="hero-trend" id="netHint">ابدأ بإضافة أول حركة</div>
-            <div class="hero-actions"><button class="mini-action" data-quick="receivable">＋ إلي</button><button class="mini-action" data-quick="payable">− عليّ</button><button class="mini-action" data-quick="income">↑ إيراد</button><button class="mini-action" data-quick="expense">↓ مصروف</button></div>
+            <div class="hero-actions"><button class="mini-action" data-quick="receivable">＋ إلي</button><button class="mini-action" data-quick="payable">− عليّ</button><button class="mini-action" data-quick="income">↑ إيراد</button><button class="mini-action" data-quick="expense">↓ مصروف</button><button id="heroInstallBtn" class="mini-action install-mini hidden">⬇ تنزيل التطبيق</button></div>
           </article>
           <article class="visual-card glass reveal delay-1"><div class="logo-orbit"></div><img src="assets/logo.png" alt="تحويشتي"><p>مستقبل أفضل<br><b>يبدأ اليوم</b></p></article>
         </div>
