@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#071914" />
+  <meta name="description" content="تحويشتي — إدارة الديون، الإيرادات والمصاريف والدفعات بالدينار الأردني" />
+  <title>تحويشتي</title>
+  <link rel="icon" type="image/png" href="assets/favicon.png" />
+  <link rel="apple-touch-icon" href="assets/icon-192.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="splash" class="splash">
+    <div class="splash-glow"></div>
+    <img src="assets/logo.png" alt="تحويشتي" class="splash-logo" />
+    <div class="splash-line"><span></span></div>
+    <p>فلوسك أوضح. قراراتك أذكى.</p>
+  </div>
+
+  <div id="authScreen" class="auth-screen hidden">
+    <div class="auth-bg auth-bg-1"></div><div class="auth-bg auth-bg-2"></div>
+    <section class="auth-card glass">
+      <img src="assets/logo.png" class="auth-logo" alt="تحويشتي" />
+      <div class="auth-copy">
+        <span class="eyebrow">محفظتك المالية الشخصية</span>
+        <h1>كل حساباتك بمكان واحد</h1>
+        <p id="authSubtitle">سجّل دخولك حتى تتزامن حركاتك بين كل أجهزتك.</p>
+      </div>
+      <form id="authForm" class="form-grid" autocomplete="on">
+        <label class="field full"><span>البريد الإلكتروني</span><input id="authEmail" type="email" placeholder="name@example.com" autocomplete="email" required /></label>
+        <label class="field full"><span>كلمة المرور</span><input id="authPassword" type="password" placeholder="••••••••" autocomplete="current-password" minlength="6" required /></label>
+        <button class="btn primary full" id="loginSubmit" type="submit"><span>دخول</span><b>↗</b></button>
+      </form>
+      <div class="auth-switch">ما عندك حساب؟ <button id="toggleAuthMode" class="link-btn" type="button">إنشاء حساب</button></div>
+      <button id="demoBtn" class="btn ghost full" type="button">تجربة محلية بدون حساب</button>
+      <div id="authMessage" class="inline-message"></div>
+    </section>
+  </div>
+
+  <div id="app" class="app hidden">
+    <aside class="sidebar">
+      <button class="brand-button" data-nav="dashboard" aria-label="الرئيسية"><img src="assets/icon-192.png" alt=""><span><b>تحويشتي</b><small id="modeBadge">متصل</small></span></button>
+      <nav class="side-nav">
+        <button class="nav-item active" data-nav="dashboard"><span>⌂</span><b>الرئيسية</b></button>
+        <button class="nav-item" data-nav="transactions"><span>↕</span><b>الحركات</b></button>
+        <button class="nav-item" data-nav="debts"><span>◎</span><b>الديون</b></button>
+        <button class="nav-item" data-nav="settings"><span>⚙</span><b>الإعدادات</b></button>
+      </nav>
+      <div class="side-bottom"><div class="mini-secure">● البيانات محمية بحسابك</div><button id="logoutBtn" class="btn danger-soft">تسجيل خروج</button></div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div><span class="eyebrow" id="todayLabel"></span><h2 id="pageTitle">مساء الخير 👋</h2></div>
+        <div class="top-actions"><button id="refreshBtn" class="icon-btn" title="تحديث">↻</button><button id="quickAddTop" class="btn primary compact">＋ حركة جديدة</button></div>
+      </header>
+
+      <section id="view-dashboard" class="view active">
+        <div class="hero-grid">
+          <article class="balance-card glass reveal">
+            <div class="balance-shine"></div><div class="coins coin-a">◉</div><div class="coins coin-b">◉</div>
+            <span class="hero-label">صافي وضعك المالي</span>
+            <strong id="netBalance" class="hero-amount">0 د.أ</strong>
+            <div class="hero-trend" id="netHint">ابدأ بإضافة أول حركة</div>
+            <div class="hero-actions"><button class="mini-action" data-quick="receivable">＋ إلي</button><button class="mini-action" data-quick="payable">− عليّ</button><button class="mini-action" data-quick="income">↑ إيراد</button><button class="mini-action" data-quick="expense">↓ مصروف</button></div>
+          </article>
+          <article class="visual-card glass reveal delay-1"><div class="logo-orbit"></div><img src="assets/logo.png" alt="تحويشتي"><p>مستقبل أفضل<br><b>يبدأ اليوم</b></p></article>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat-card glass reveal delay-1"><span class="stat-icon green">↙</span><div><small>إلي عند الناس</small><strong id="receivableTotal">0 د.أ</strong></div><em>مستحقاتك</em></article>
+          <article class="stat-card glass reveal delay-2"><span class="stat-icon red">↗</span><div><small>عليّ للناس</small><strong id="payableTotal">0 د.أ</strong></div><em>التزاماتك</em></article>
+          <article class="stat-card glass reveal delay-3"><span class="stat-icon gold">＋</span><div><small>الإيرادات</small><strong id="incomeTotal">0 د.أ</strong></div><em>إجمالي الداخل</em></article>
+          <article class="stat-card glass reveal delay-4"><span class="stat-icon blue">−</span><div><small>المصاريف</small><strong id="expenseTotal">0 د.أ</strong></div><em>إجمالي الخارج</em></article>
+        </div>
+
+        <div class="content-grid">
+          <section class="section-card glass reveal delay-2"><div class="section-head"><div><span class="eyebrow">آخر النشاط</span><h3>أحدث الحركات</h3></div><button class="link-btn" data-nav="transactions">عرض الكل ←</button></div><div id="recentList" class="activity-list"></div></section>
+          <section class="section-card glass reveal delay-3"><div class="section-head"><div><span class="eyebrow">الديون</span><h3>أقرب مبالغ للتسديد</h3></div></div><div id="debtPreview" class="debt-preview"></div></section>
+        </div>
+      </section>
+
+      <section id="view-transactions" class="view">
+        <div class="section-card glass">
+          <div class="section-head responsive"><div><span class="eyebrow">السجل الكامل</span><h3>كل الحركات</h3></div><button id="addFromTransactions" class="btn primary compact">＋ إضافة حركة</button></div>
+          <div class="filters"><div class="search-box">⌕ <input id="searchInput" placeholder="ابحث بالاسم أو الملاحظة..." /></div><select id="typeFilter"><option value="all">كل الأنواع</option><option value="receivable">إلي</option><option value="payable">عليّ</option><option value="income">إيراد</option><option value="expense">مصروف</option></select><select id="statusFilter"><option value="all">كل الحالات</option><option value="open">مفتوح</option><option value="partial">مدفوع جزئيًا</option><option value="paid">مكتمل</option></select></div>
+          <div id="entriesList" class="entries-list"></div>
+        </div>
+      </section>
+
+      <section id="view-debts" class="view">
+        <div class="debt-head"><div><span class="eyebrow">متابعة سهلة</span><h3>الديون والدفعات</h3></div><button class="btn primary compact" data-quick="receivable">＋ دين جديد</button></div>
+        <div id="debtsList" class="debts-grid"></div>
+      </section>
+
+      <section id="view-settings" class="view">
+        <div class="settings-grid">
+          <article class="section-card glass"><span class="eyebrow">البيانات</span><h3>نسخة احتياطية</h3><p>نزّل كل حركاتك ودفعاتك بملف JSON أو استرجع نسخة سابقة.</p><div class="row-actions"><button id="exportBtn" class="btn secondary">⬇ تصدير نسخة</button><button id="importBtn" class="btn ghost">⬆ استرجاع نسخة</button><input id="importFile" type="file" accept="application/json" hidden></div></article>
+          <article class="section-card glass"><span class="eyebrow">التطبيق</span><h3>وضع التشغيل</h3><p id="connectionInfo">—</p><button id="installBtn" class="btn secondary hidden">تثبيت تحويشتي كتطبيق</button></article>
+          <article class="section-card glass"><span class="eyebrow">الحساب</span><h3>الأمان والمزامنة</h3><p id="accountInfo">—</p><button id="settingsLogoutBtn" class="btn danger-soft">تسجيل خروج</button></article>
+        </div>
+      </section>
+    </main>
+
+    <nav class="mobile-nav glass"><button class="active" data-nav="dashboard"><span>⌂</span>الرئيسية</button><button data-nav="transactions"><span>↕</span>الحركات</button><button id="mobileAdd" class="mobile-add">＋</button><button data-nav="debts"><span>◎</span>الديون</button><button data-nav="settings"><span>⚙</span>الإعدادات</button></nav>
+  </div>
+
+  <div id="entryModal" class="modal" aria-hidden="true"><div class="modal-backdrop" data-close="entryModal"></div><section class="modal-card glass"><div class="modal-head"><div><span class="eyebrow">حركة مالية</span><h3 id="entryModalTitle">إضافة حركة</h3></div><button class="close-btn" data-close="entryModal">×</button></div><form id="entryForm" class="form-grid">
+    <label class="field"><span>نوع الحركة</span><select id="entryType"><option value="receivable">💚 إلي</option><option value="payable">🔴 عليّ</option><option value="income">📈 إيراد</option><option value="expense">📉 مصروف</option></select></label>
+    <label class="field"><span>المبلغ بالدينار</span><input id="entryAmount" type="number" min="0.001" step="0.001" inputmode="decimal" placeholder="0.000" required></label>
+    <label class="field"><span id="personLabel">اسم الشخص</span><input id="entryPerson" maxlength="120" placeholder="مثال: أحمد"></label>
+    <label class="field"><span>التاريخ</span><input id="entryDate" type="date" required></label>
+    <label class="field full"><span>ملاحظة</span><textarea id="entryNote" rows="3" maxlength="800" placeholder="تفاصيل اختيارية..."></textarea></label>
+    <label class="upload-zone full"><input id="entryReceipt" type="file" accept="image/jpeg,image/png,image/webp" hidden><span>📸</span><b>إضافة صورة إيصال أو حوالة</b><small id="receiptLabel">JPG / PNG / WEBP — حتى 5MB</small></label>
+    <div class="modal-actions full"><button type="button" id="deleteEntryBtn" class="btn danger-soft hidden">حذف</button><span class="spacer"></span><button type="button" class="btn ghost" data-close="entryModal">إلغاء</button><button type="submit" class="btn primary">حفظ الحركة</button></div>
+  </form></section></div>
+
+  <div id="paymentModal" class="modal" aria-hidden="true"><div class="modal-backdrop" data-close="paymentModal"></div><section class="modal-card small glass"><div class="modal-head"><div><span class="eyebrow">دفعة</span><h3>تسجيل دفعة جديدة</h3></div><button class="close-btn" data-close="paymentModal">×</button></div><p id="paymentHint" class="modal-hint"></p><form id="paymentForm" class="form-grid"><label class="field full"><span>قيمة الدفعة</span><input id="paymentAmount" type="number" min="0.001" step="0.001" required></label><label class="field"><span>التاريخ</span><input id="paymentDate" type="date" required></label><label class="field"><span>ملاحظة</span><input id="paymentNote" maxlength="500" placeholder="اختياري"></label><div class="modal-actions full"><span class="spacer"></span><button type="button" class="btn ghost" data-close="paymentModal">إلغاء</button><button type="submit" class="btn primary">حفظ الدفعة</button></div></form></section></div>
+
+  <div id="receiptModal" class="modal" aria-hidden="true"><div class="modal-backdrop" data-close="receiptModal"></div><section class="modal-card receipt-modal glass"><div class="modal-head"><h3>صورة الإيصال</h3><button class="close-btn" data-close="receiptModal">×</button></div><div id="receiptView" class="receipt-view">جاري التحميل...</div></section></div>
+
+  <button id="fab" class="fab" aria-label="إضافة حركة">＋</button>
+  <div id="loading" class="loading hidden"><div class="loader-ring"></div><span>لحظة...</span></div>
+  <div id="toast" class="toast"></div>
+
+  <script src="config.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
