@@ -29,6 +29,7 @@ function setMode(){
 }
 
 async function api(action,payload={},auth=true){
+  if(!cfg.apiUrl) throw new Error('إعداد الاتصال بالخادم غير محمّل.');
   const headers={'Content-Type':'application/json'};
   if(cfg.supabaseAnonKey) headers.apikey=cfg.supabaseAnonKey;
   if(auth && state.sessionToken) headers.Authorization=`Bearer ${state.sessionToken}`;
