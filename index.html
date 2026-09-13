@@ -8,8 +8,8 @@
   <title>تحويشتي</title>
   <link rel="icon" type="image/png" href="assets/favicon.png" />
   <link rel="apple-touch-icon" href="assets/icon-192.png" />
-  <link rel="manifest" href="manifest.json?v=7.4.2" />
-  <link rel="stylesheet" href="styles.css?v=7.4.2" />
+  <link rel="manifest" href="manifest.json?v=8.0" />
+  <link rel="stylesheet" href="styles.css?v=8.0" />
 </head>
 <body>
   <div id="splash" class="splash">
@@ -52,10 +52,10 @@
         <button class="nav-item" data-nav="transactions"><span>↕</span><b>الحركات</b></button>
         <button class="nav-item" data-nav="people"><span>♙</span><b>الأشخاص</b></button>
         <button class="nav-item" data-nav="goals"><span>◎</span><b>أهداف التحويش</b></button>
-        <button class="nav-item" data-nav="planning"><span>▦</span><b>التخطيط</b></button>
+        <button class="nav-item advanced-nav" data-nav="planning"><span>▦</span><b>تنظيم فلوسي</b></button>
         <button class="nav-item" data-nav="subscriptions"><span>↻</span><b>الاشتراكات</b></button>
-        <button class="nav-item" data-nav="analytics"><span>⌁</span><b>الإحصائيات</b></button>
-        <button class="nav-item" data-nav="calendar"><span>▣</span><b>الرزنامة</b></button>
+        <button class="nav-item advanced-nav" data-nav="analytics"><span>⌁</span><b>التقارير</b></button>
+        <button class="nav-item advanced-nav" data-nav="calendar"><span>▣</span><b>المواعيد</b></button>
         <button class="nav-item" data-nav="settings"><span>⚙</span><b>الإعدادات</b></button>
       </nav>
       <div class="side-bottom">
@@ -68,10 +68,11 @@
       <header class="topbar">
         <div class="title-wrap"><span class="eyebrow" id="todayLabel"></span><h2 id="pageTitle">لوحة التحكم</h2></div>
         <div class="top-actions">
+          <button id="globalSearchBtn" class="icon-btn" title="بحث بكل شيء">⌕</button>
           <button id="privacyBtn" class="icon-btn" title="إخفاء الأرقام">◉</button>
           <button id="themeBtn" class="icon-btn" title="تغيير المظهر">☾</button>
           <button id="refreshBtn" class="icon-btn" title="تحديث">↻</button>
-          <button id="quickAddTop" class="btn primary compact">＋ حركة جديدة</button>
+          <button id="quickAddTop" class="btn primary compact">＋ إضافة</button>
         </div>
       </header>
 
@@ -108,7 +109,7 @@
   <div id="loading" class="loading hidden"><div class="loader-ring"></div><span>جاري التنفيذ...</span></div>
   <div id="toast" class="toast"><span id="toastText"></span><button id="toastAction" class="hidden"></button></div>
 
-  <script src="config.js?v=7.4.2"></script>
-  <script src="app.js?v=7.4.2" type="module"></script>
+  <script src="config.js?v=8.0"></script>
+  <script src="app.js?v=8.0" type="module"></script>
 </body>
 </html>
