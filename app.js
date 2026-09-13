@@ -4,7 +4,7 @@ const $$ = (s, r=document) => [...r.querySelectorAll(s)];
 
 const SESSION_KEY = 'tahweeshti_shared_session';
 const OWNER_NAME = 'Yahya Saeed';
-const APP_VERSION = '7.3';
+const APP_VERSION = '7.4';
 const DEFAULT_PREFS = {
   theme:'dark', hideAmounts:false, notifications:false, autoLockMinutes:15,
   hiddenCards:[], viewOnly:false, calendarMonth:'', dashboardCompact:false
@@ -82,7 +82,7 @@ function validateShell(){
   const required=[
     '#splash','#authScreen','#app','#authForm','#authPin','#authPinConfirm','#loginSubmit',
     '#quickAddTop','#mobileAdd','#logoutBtn','#refreshBtn','#themeBtn','#privacyBtn',
-    '#authInstallBtn','#modalRoot','#modalBody','#loading','#toast','#toastText','#toastAction',
+    '#authInstallBtn','#createAccountBtn','#accountSwitchHint','#modalRoot','#modalBody','#loading','#toast','#toastText','#toastAction',
     '#view-dashboard','#view-transactions','#view-people','#view-goals','#view-planning','#view-subscriptions',
     '#view-analytics','#view-calendar','#view-settings','#pageTitle','#todayLabel','#modeBadge'
   ];
@@ -151,32 +151,55 @@ async function savePrefs(patch,rerender=true){
 }
 async function refreshAll(fetch=true){if(fetch)await fetchData();renderCurrent();}
 
+function setAuthMode(mode='login'){
+  const setup=mode==='setup';
+  $('#authForm').dataset.mode=mode;
+  $('#pinLabel').textContent=setup?'أنشئ رمز جديد':'رمز الدخول';
+  $('#loginSubmit span').textContent=setup?'إنشاء الحساب':'تسجيل الدخول';
+  $('#authSubtitle').textContent=setup
+    ?'اختَر رمز من 4 أرقام غير مستخدم. هذا الرمز رح يكون حسابك ويفتح نفس بياناتك من أي جهاز.'
+    :'أدخل رمز حسابك المكوّن من 4 أرقام لتظهر بياناتك من أي جهاز.';
+  $('#pinConfirmField').classList.toggle('hidden',!setup);
+  $('#authPinConfirm').required=setup;
+  $('#createAccountBtn').textContent=setup?'← رجوع لتسجيل الدخول':'＋ إنشاء حساب جديد';
+  $('#accountSwitchHint').textContent=setup?'عندك حساب من قبل؟':'أول مرة تستخدم تحويشتي؟';
+  $('#authPin').value='';$('#authPinConfirm').value='';$('#authMessage').textContent='';
+  setTimeout(()=>$('#authPin')?.focus(),80);
+}
 function showAuth(forceLogin=false){
   $('#app').classList.add('hidden');$('#authScreen').classList.remove('hidden');
-  const setup=!state.initialized&&!forceLogin;
-  $('#pinLabel').textContent=setup?'أنشئ رمز الدخول':'رمز الدخول';
-  $('#loginSubmit span').textContent=setup?'إنشاء الحساب':'تسجيل الدخول';
-  $('#authSubtitle').textContent=setup?'اختَر رمز من 4 أرقام مرة واحدة، وبعدها نفس الرمز يفتح نفس البيانات من أي جهاز.':'أدخل نفس الرمز من 4 أرقام لتظهر لك بياناتك المتزامنة من أي جهاز.';
-  $('#pinConfirmField').classList.toggle('hidden',!setup); $('#authPinConfirm').required=setup;
-  $('#authForm').dataset.mode=setup?'setup':'login'; $('#authPin').value='';$('#authPinConfirm').value='';$('#authMessage').textContent='';
+  setAuthMode((!state.initialized&&!forceLogin)?'setup':'login');
 }
 async function authSubmit(ev){
-  ev.preventDefault(); const mode=$('#authForm').dataset.mode;
+  ev.preventDefault(); const mode=$('#authForm').dataset.mode||'login';
   const pin=normalizeDigits($('#authPin').value).replace(/\D/g,''),confirmPin=normalizeDigits($('#authPinConfirm').value).replace(/\D/g,'');
+  $('#authMessage').textContent='';
   if(pin.length!==4){$('#authMessage').textContent='الرمز لازم يكون 4 أرقام.';return}
-  loading(true,'جاري تأمين الحساب...');
+  loading(true,mode==='setup'?'جاري إنشاء الحساب...':'جاري تسجيل الدخول...');
   try{
-    let d;if(mode==='setup'){if(confirmPin!==pin)throw new Error('الرمزان غير متطابقين.');d=await api('setup',{pin},false);state.initialized=true}else d=await api('login',{pin},false);
-    saveSession(d.token); await api('process_recurring',{today:today()}); await enterApp(); toast(mode==='setup'?'تم إنشاء الحساب المشترك ✨':'أهلًا فيك 👋');
-  }catch(e){$('#authMessage').textContent=e.message||'تعذر الدخول'}finally{loading(false);$('#authPin').value='';$('#authPinConfirm').value=''}
+    let d;
+    if(mode==='setup'){
+      if(confirmPin.length!==4)throw new Error('أكد الرمز من 4 أرقام.');
+      if(confirmPin!==pin)throw new Error('الرمزان غير متطابقين.');
+      d=await api('signup',{pin},false);state.initialized=true;
+    }else d=await api('login',{pin},false);
+    state.accountId=d.accountId||'';saveSession(d.token);
+    await api('process_recurring',{today:today()});await enterApp();
+    toast(mode==='setup'?'تم إنشاء حسابك الجديد ✨':'أهلًا فيك 👋');
+  }catch(e){
+    const msg=e?.message||'تعذر الدخول';
+    $('#authMessage').textContent=msg;
+    if(mode==='setup'&&msg.includes('مستخدم'))$('#authPin').focus();
+  }finally{loading(false);$('#authPin').value='';$('#authPinConfirm').value=''}
 }
+
 async function enterApp(){
   loading(true,'جاري مزامنة بياناتك...');
-  try{await fetchData();const s=await api('admin_status');state.admin=s;$('#authScreen').classList.add('hidden');$('#app').classList.remove('hidden');setMode();navigate('dashboard');maybeNotifyDue();handleQuickParam();}
+  try{const sess=await api('session');state.accountId=sess.accountId||state.accountId;await fetchData();const s=await api('admin_status');state.admin=s;$('#authScreen').classList.add('hidden');$('#app').classList.remove('hidden');setMode();navigate('dashboard');maybeNotifyDue();handleQuickParam();}
   finally{loading(false)}
 }
 function setMode(){const m=$('#modeBadge');m.textContent='مزامنة مشتركة';m.style.color='var(--emerald)'}
-async function logout(){try{if(state.sessionToken)await api('logout')}catch{}saveSession('');showAuth(true);toast('تم تسجيل الخروج')}
+async function logout(){try{if(state.sessionToken)await api('logout')}catch{}state.accountId='';saveSession('');showAuth(true);toast('تم تسجيل الخروج')}
 
 function resetAutoLock(){clearTimeout(state.autoLockTimer);state.lastActivity=Date.now();const mins=Number(state.prefs.autoLockMinutes||0);if(mins>0&&state.sessionToken){state.autoLockTimer=setTimeout(async()=>{toast('تم قفل التطبيق تلقائيًا 🔒');await logout()},mins*60*1000)}}
 function markActivity(){state.lastActivity=Date.now();resetAutoLock()}
@@ -532,7 +555,7 @@ document.addEventListener('click',async ev=>{
 document.addEventListener('submit',async ev=>{markActivity();ev.preventDefault();const f=ev.target;if(f.id==='authForm')return authSubmit(ev);if(f.id==='entryForm')return submitEntry(f);if(f.id==='paymentForm')return submitPayment(f);if(['goalForm','goalContributionForm','walletForm','transferForm','budgetForm','installmentForm','subscriptionForm','recurringForm','categoryForm','personProfileForm'].includes(f.id))return submitDocForm(f);if(f.id==='changePinForm'){const fd=new FormData(f),oldPin=normalizeDigits(fd.get('oldPin')).replace(/\D/g,''),newPin=normalizeDigits(fd.get('newPin')).replace(/\D/g,''),confirmPin=normalizeDigits(fd.get('confirmPin')).replace(/\D/g,'');if(newPin.length!==4||newPin!==confirmPin)return toast('تأكد من الرمز الجديد');loading(true);try{await api('change_pin',{oldPin,newPin});closeModal();toast('تم تغيير رمز الدخول ✅')}catch(e){toast(e.message)}finally{loading(false)}}if(f.id==='adminPinForm'){const fd=new FormData(f),pin=normalizeDigits(fd.get('pin')).replace(/\D/g,'');if(pin.length!==4)return toast('الرمز لازم 4 أرقام');if(!state.admin.enabled&&pin!==normalizeDigits(fd.get('confirm')).replace(/\D/g,''))return toast('الرمزان غير متطابقين');loading(true);try{await api(state.admin.enabled?'admin_unlock':'admin_setup',{pin});state.admin=await api('admin_status');closeModal();renderSettings();toast('صلاحيات الإدارة جاهزة 🛡')}catch(e){toast(e.message)}finally{loading(false)}}if(f.id==='autoLockForm'){const mins=Number(new FormData(f).get('minutes'));await savePrefs({autoLockMinutes:mins});closeModal();toast('تم حفظ القفل التلقائي')}});
 
 function bindTop(){
-  $('#quickAddTop').onclick=()=>openEntryForm();$('#mobileAdd').onclick=()=>openEntryForm();$('#logoutBtn').onclick=logout;$('#refreshBtn').onclick=async()=>{loading(true);try{await api('process_recurring',{today:today()});await fetchData();renderCurrent();toast('تم التحديث والمزامنة ↻')}catch(e){toast(e.message)}finally{loading(false)}};$('#themeBtn').onclick=()=>savePrefs({theme:state.prefs.theme==='light'?'dark':'light'});$('#privacyBtn').onclick=()=>savePrefs({hideAmounts:!state.prefs.hideAmounts});$('#authInstallBtn').onclick=installApp;
+  $('#quickAddTop').onclick=()=>openEntryForm();$('#mobileAdd').onclick=()=>openEntryForm();$('#logoutBtn').onclick=logout;$('#refreshBtn').onclick=async()=>{loading(true);try{await api('process_recurring',{today:today()});await fetchData();renderCurrent();toast('تم التحديث والمزامنة ↻')}catch(e){toast(e.message)}finally{loading(false)}};$('#themeBtn').onclick=()=>savePrefs({theme:state.prefs.theme==='light'?'dark':'light'});$('#privacyBtn').onclick=()=>savePrefs({hideAmounts:!state.prefs.hideAmounts});$('#authInstallBtn').onclick=installApp$('#createAccountBtn').onclick=()=>setAuthMode(($('#authForm').dataset.mode||'login')==='setup'?'login':'setup');;
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();state.installPrompt=e});['pointerdown','keydown','touchstart'].forEach(ev=>window.addEventListener(ev,markActivity,{passive:true}));
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#modalRoot').classList.contains('open'))closeModal()});
 }
@@ -544,11 +567,11 @@ async function init(){
     validateShell();
     $('#todayLabel').textContent=new Intl.DateTimeFormat('ar-JO',{weekday:'long',day:'numeric',month:'long',timeZone:'Asia/Amman'}).format(new Date());
     if('serviceWorker'in navigator){
-      navigator.serviceWorker.register('./service-worker.js?v=7.2.0').catch(err=>console.warn('SW registration failed',err));
+      navigator.serviceWorker.register('./service-worker.js?v=7.4.0').catch(err=>console.warn('SW registration failed',err));
     }
     bindTop();
     const s=await api('status',{},false);
-    state.initialized=!!s.initialized;
+    state.initialized=!!s.initialized;state.multiAccount=s.multiAccount!==false;
     if(state.sessionToken){
       try{
         const sess=await api('session');

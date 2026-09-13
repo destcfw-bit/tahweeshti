@@ -96,3 +96,11 @@ body.light-theme{--bg:#eef5f0;--bg2:#e5efe8;--panel:rgba(255,255,255,.86);--pane
 .subscription-dashboard .empty-state{min-height:90px}
 @media(max-width:900px){.subscription-summary{grid-template-columns:1fr 1fr}.subscription-hero{align-items:flex-start;flex-direction:column}}
 @media(max-width:520px){.subscription-summary{grid-template-columns:1fr}.subscription-hero .btn{width:100%}}
+
+/* V7.4 Multi-account authentication */
+.account-switch-box{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;padding:13px 14px;border:1px solid rgba(239,196,93,.12);border-radius:16px;background:rgba(255,255,255,.025);margin-top:10px}
+.account-switch-box>span{font-size:11px;color:var(--muted)}
+.account-switch-btn{padding:10px 14px!important;min-height:40px!important;background:rgba(47,224,163,.08)!important;border:1px solid rgba(47,224,163,.26)!important;color:var(--emerald)!important;white-space:nowrap}
+.account-switch-btn:hover{background:rgba(47,224,163,.14)!important;transform:translateY(-1px)}
+#authMessage:not(:empty){margin-top:10px;padding:11px 13px;border-radius:13px;background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.2);color:#ffb1b1;text-align:center}
+@media(max-width:520px){.account-switch-box{grid-template-columns:1fr}.account-switch-btn{width:100%}}

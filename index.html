@@ -8,8 +8,8 @@
   <title>تحويشتي</title>
   <link rel="icon" type="image/png" href="assets/favicon.png" />
   <link rel="apple-touch-icon" href="assets/icon-192.png" />
-  <link rel="manifest" href="manifest.json?v=7.3.0" />
-  <link rel="stylesheet" href="styles.css?v=7.3.0" />
+  <link rel="manifest" href="manifest.json?v=7.4.0" />
+  <link rel="stylesheet" href="styles.css?v=7.4.0" />
 </head>
 <body>
   <div id="splash" class="splash">
@@ -32,7 +32,11 @@
           <label id="pinConfirmField" class="field pin-field hidden"><span>تأكيد الرمز</span><div class="pin-input-wrap"><b>▣</b><input id="authPinConfirm" type="password" inputmode="numeric" maxlength="4" minlength="4" placeholder="••••" /></div></label>
           <button id="loginSubmit" class="btn primary auth-submit" type="submit"><span>تسجيل الدخول</span><b>↗</b></button>
         </form>
-        <div class="security-strip"><span></span><b>🛡</b><p>بدون إيميل — نفس الرمز يفتح نفس الحساب بسهولة</p><span></span></div>
+        <div class="security-strip"><span></span><b>🛡</b><p>بدون إيميل — كل رمز رباعي يفتح حسابه وبياناته فقط</p><span></span></div>
+        <div class="account-switch-box">
+          <span id="accountSwitchHint">أول مرة تستخدم تحويشتي؟</span>
+          <button id="createAccountBtn" class="btn account-switch-btn" type="button">＋ إنشاء حساب جديد</button>
+        </div>
         <button id="authInstallBtn" class="btn install-btn" type="button">⇩ <span>تنزيل التطبيق</span></button>
         <div id="authMessage" class="inline-message"></div>
       </div>
@@ -104,7 +108,7 @@
   <div id="loading" class="loading hidden"><div class="loader-ring"></div><span>جاري التنفيذ...</span></div>
   <div id="toast" class="toast"><span id="toastText"></span><button id="toastAction" class="hidden"></button></div>
 
-  <script src="config.js?v=7.3.0"></script>
-  <script src="app.js?v=7.3.0" type="module"></script>
+  <script src="config.js?v=7.4.0"></script>
+  <script src="app.js?v=7.4.0" type="module"></script>
 </body>
 </html>
