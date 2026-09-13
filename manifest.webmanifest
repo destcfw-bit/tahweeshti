@@ -1,14 +1,15 @@
 {
   "name": "تحويشتي",
   "short_name": "تحويشتي",
-  "description": "إدارة الديون والإيرادات والمصاريف والدفعات بالدينار الأردني",
+  "description": "محفظتك المالية الشخصية — ديون، إيرادات، مصاريف ودفعات بالدينار الأردني",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#06140f",
-  "theme_color": "#071914",
+  "orientation": "portrait-primary",
+  "background_color": "#03110d",
+  "theme_color": "#03110d",
   "icons": [
     {"src":"assets/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
     {"src":"assets/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
