@@ -39,3 +39,11 @@
 
 ## النشر
 المستودع مربوط مع Railway. بعد تحديث ملفات `main` سيبدأ Railway إعادة النشر تلقائيًا.
+
+
+## V7.2 Audit
+- تم توحيد واجهة V7 مع app.js V7.
+- إصلاح دالة empty المفقودة.
+- إضافة حماية أخطاء للعرض والتشغيل.
+- Cache busting + Service Worker v10 لمنع خلط ملفات إصدارات قديمة.
+- تم التحقق من JavaScript syntax وDOM IDs وAPI actions وmanifest وCSS balance.
