@@ -4,7 +4,7 @@ const $$ = (s, r=document) => [...r.querySelectorAll(s)];
 
 const SESSION_KEY = 'tahweeshti_shared_session';
 const OWNER_NAME = 'Yahya Saeed';
-const APP_VERSION = '7.4.1';
+const APP_VERSION = '7.4.2';
 const DEFAULT_PREFS = {
   theme:'dark', hideAmounts:false, notifications:false, autoLockMinutes:15,
   hiddenCards:[], viewOnly:false, calendarMonth:'', dashboardCompact:false
@@ -456,7 +456,46 @@ function openPersonProfile(name){if(!guardMutation())return;const p=personProfil
 
 /* Submit handlers */
 async function uploadReceipt(file,entryId){if(!file)return '';if(file.size>5*1024*1024)throw new Error('حجم الصورة أكبر من 5MB');const base64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]||'');r.onerror=rej;r.readAsDataURL(file)});const d=await api('receipt_upload',{entryId,mime:file.type,base64});return d.path}
-async function submitEntry(form){if(!guardMutation())return;const fd=new FormData(form),existing=state.editingEntryId?state.entries.find(x=>x.id===state.editingEntryId):null,id=existing?.id||uid();let receiptPath=existing?.receiptPath||'';loading(true,'جاري حفظ الحركة...');try{if(state.pendingReceipt)receiptPath=await uploadReceipt(state.pendingReceipt,id);const type=fd.get('type'),amount=Number(fd.get('amount')),person=String(fd.get('person')||'').trim();if(['receivable','payable'].includes(type)&&!person)throw new Error('اكتب اسم الشخص');const meta={category:fd.get('category')||'عام',walletId:fd.get('walletId')||'',paymentMethod:fd.get('paymentMethod')||'',dueDate:fd.get('dueDate')||'',tags:String(fd.get('tags')||'').split(',').map(x=>x.trim()).filter(Boolean),reference:existing?.meta?.reference||refCode()};await api('entry_upsert',{entry:{id,type,amount,person,date:fd.get('date'),note:fd.get('note')||'',receiptPath,meta}});closeModal();await fetchData();renderCurrent();toast(existing?'تم تعديل الحركة ✅':'تم حفظ الحركة ✅')}catch(e){toast(e.message||'تعذر الحفظ')}finally{loading(false)}}
+async function submitEntry(form){
+  if(!guardMutation())return;
+  const fd=new FormData(form);
+  const existing=state.editingEntryId?state.entries.find(x=>x.id===state.editingEntryId):null;
+  let receiptPath=existing?.receiptPath||'';
+  loading(true,'جاري حفظ الحركة...');
+  try{
+    const type=fd.get('type'),amount=Number(fd.get('amount')),person=String(fd.get('person')||'').trim();
+    if(['receivable','payable'].includes(type)&&!person)throw new Error('اكتب اسم الشخص');
+    const meta={category:fd.get('category')||'عام',walletId:fd.get('walletId')||'',paymentMethod:fd.get('paymentMethod')||'',dueDate:fd.get('dueDate')||'',tags:String(fd.get('tags')||'').split(',').map(x=>x.trim()).filter(Boolean),reference:existing?.meta?.reference||refCode()};
+    const base={type,amount,person,date:fd.get('date'),note:fd.get('note')||'',receiptPath,meta};
+    let savedId=existing?.id||'';
+
+    // الحركة الجديدة تُنشأ أولاً بدون ID قادم من الواجهة، حتى يربطها السيرفر بالحساب الحالي.
+    if(existing){
+      if(state.pendingReceipt) receiptPath=await uploadReceipt(state.pendingReceipt,existing.id);
+      await api('entry_upsert',{entry:{...base,id:existing.id,receiptPath}});
+      savedId=existing.id;
+    }else{
+      const created=await api('entry_upsert',{entry:{...base,receiptPath:''}});
+      savedId=created.id;
+      if(state.pendingReceipt){
+        receiptPath=await uploadReceipt(state.pendingReceipt,savedId);
+        await api('entry_upsert',{entry:{...base,id:savedId,receiptPath}});
+      }
+    }
+
+    state.editingEntryId=null;
+    state.pendingReceipt=null;
+    closeModal();
+    await fetchData();
+    renderCurrent();
+    toast(existing?'تم تعديل الحركة ✅':'تم حفظ الحركة ✅');
+  }catch(e){
+    console.error('submitEntry failed',e);
+    // لو بقي ID تعديل قديم من واجهة/كاش سابق لا نخليه يلوّث المحاولة التالية.
+    if(!existing) state.editingEntryId=null;
+    toast(e.message||'تعذر الحفظ');
+  }finally{loading(false)}
+}
 async function submitPayment(form){if(!guardMutation())return;const fd=new FormData(form),e=allEntries().find(x=>x.id===state.paymentEntryId),amount=Number(fd.get('amount'));if(!e||amount<=0||amount>e.remaining+.0001)return toast('قيمة الدفعة غير صحيحة');loading(true);try{await api('payment_add',{payment:{entryId:e.id,amount,date:fd.get('date'),note:fd.get('note')||'',meta:{walletId:fd.get('walletId')||'',paymentMethod:fd.get('paymentMethod')||'',reference:refCode()}}});closeModal();await fetchData();renderCurrent();toast('تم تسجيل الدفعة 💳')}catch(e){toast(e.message||'تعذر حفظ الدفعة')}finally{loading(false)}}
 function parseStages(s){return String(s||'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{const [title,...rest]=l.split(':');return {title:title.trim(),amount:Number(rest.join(':').trim()||0)}}).filter(x=>x.title&&x.amount>0)}
 function parseLimits(s){const o={};String(s||'').split('\n').map(l=>l.trim()).filter(Boolean).forEach(l=>{const [k,...r]=l.split(':');const v=Number(r.join(':').trim());if(k&&v>=0)o[k.trim()]=v});return o}
@@ -507,7 +546,7 @@ function openAutolock(){openModal('القفل التلقائي','الأمان',`
 async function deleteEntry(id){if(!guardMutation())return;if(!confirm('أنقل الحركة لسلة المحذوفات؟'))return;loading(true);try{await api('entry_delete',{id});closeModal();await fetchData();renderCurrent();toast('تم نقل الحركة للسلة','تراجع',async()=>{await api('entry_restore',{id});await fetchData();renderCurrent()})}catch(e){toast(e.message)}finally{loading(false)}}
 async function deleteDoc(id){if(!guardMutation())return;if(!confirm('أنقل هذا العنصر لسلة المحذوفات؟'))return;loading(true);try{await api('doc_delete',{id});closeModal();await fetchData();renderCurrent();toast('تم النقل للسلة','تراجع',async()=>{await api('doc_restore',{id});await fetchData();renderCurrent()})}catch(e){toast(e.message)}finally{loading(false)}}
 async function settlePerson(name){if(!guardMutation())return;if(!confirm(`تسوية الديون المتبادلة مع ${name} بدون حركة كاش؟`))return;loading(true);try{const d=await api('settle_person',{person:name,date:today()});await fetchData();renderCurrent();closeModal();toast(d.amount?`تمت تسوية ${money(d.amount)} ⚖`:'ما في مبالغ متبادلة قابلة للتسوية')}catch(e){toast(e.message)}finally{loading(false)}}
-async function installmentPay(id){if(!guardMutation())return;const d=docs('installment').find(x=>x.id===id);if(!d)return;const x=d.data,paid=Number(x.paidInstallments||0),count=Number(x.installments||0);if(paid>=count)return toast('الخطة مكتملة');loading(true);try{await api('entry_upsert',{entry:{id:uid(),type:'expense',amount:Number(x.installmentAmount||0),person:x.person||x.title,date:today(),note:`قسط ${paid+1} من ${count} — ${x.title}`,receiptPath:'',meta:{category:x.category||'أقساط',walletId:x.walletId||'',paymentMethod:'',tags:['قسط'],reference:refCode(),installmentId:id}}});const next=new Date(`${x.nextDate||today()}T12:00:00`);next.setMonth(next.getMonth()+1);await upsertDoc('installment',{...x,paidInstallments:paid+1,nextDate:next.toISOString().slice(0,10)},id);await fetchData();renderCurrent();toast('تم تسجيل القسط ✅')}catch(e){toast(e.message)}finally{loading(false)}}
+async function installmentPay(id){if(!guardMutation())return;const d=docs('installment').find(x=>x.id===id);if(!d)return;const x=d.data,paid=Number(x.paidInstallments||0),count=Number(x.installments||0);if(paid>=count)return toast('الخطة مكتملة');loading(true);try{await api('entry_upsert',{entry:{type:'expense',amount:Number(x.installmentAmount||0),person:x.person||x.title,date:today(),note:`قسط ${paid+1} من ${count} — ${x.title}`,receiptPath:'',meta:{category:x.category||'أقساط',walletId:x.walletId||'',paymentMethod:'',tags:['قسط'],reference:refCode(),installmentId:id}}});const next=new Date(`${x.nextDate||today()}T12:00:00`);next.setMonth(next.getMonth()+1);await upsertDoc('installment',{...x,paidInstallments:paid+1,nextDate:next.toISOString().slice(0,10)},id);await fetchData();renderCurrent();toast('تم تسجيل القسط ✅')}catch(e){toast(e.message)}finally{loading(false)}}
 
 async function confirmSubscription(id){
   if(!guardMutation())return;
@@ -518,7 +557,7 @@ async function confirmSubscription(id){
   loading(true,direction==='incoming'?'جاري تسجيل التحويل...':'جاري تسجيل الخصم...');
   try{
     await api('entry_upsert',{entry:{
-      id:uid(),type:direction==='incoming'?'income':'expense',amount,person:x.title||'اشتراك شهري',date:today(),
+      type:direction==='incoming'?'income':'expense',amount,person:x.title||'اشتراك شهري',date:today(),
       note:`اشتراك شهري — ${x.title||''}${x.note?` — ${x.note}`:''}`,receiptPath:'',
       meta:{category:'اشتراكات',walletId:x.walletId||'',paymentMethod:x.paymentMethod||'',tags:['اشتراك شهري'],reference:refCode(),subscriptionId:id,scheduledDate:scheduled}
     }});

@@ -285,10 +285,21 @@ Deno.serve(async (req: Request) => {
       if (!(Number(e.amount) > 0)) return json({ error: 'المبلغ غير صالح.' }, 400);
       if (!isoDate(e.date)) return json({ error: 'التاريخ غير صالح.' }, 400);
       if (['receivable', 'payable'].includes(e.type) && !String(e.person || '').trim()) return json({ error: 'اسم الشخص مطلوب.' }, 400);
-      const id = e.id || crypto.randomUUID();
-      if (e.id) {
-        const { data: owned } = await supabase.from('tahweeshti_shared_entries').select('id').eq('id', id).eq('account_id', accountId).maybeSingle();
-        if (!owned) return json({ error: 'الحركة غير موجودة في هذا الحساب.' }, 404);
+      const requestedId = e.id ? String(e.id) : '';
+      const id = requestedId || crypto.randomUUID();
+      let isUpdate = false;
+      if (requestedId) {
+        const { data: found, error: lookupError } = await supabase
+          .from('tahweeshti_shared_entries')
+          .select('id,account_id')
+          .eq('id', id)
+          .maybeSingle();
+        if (lookupError) throw lookupError;
+        if (found) {
+          if (found.account_id !== accountId) return json({ error: 'الحركة غير موجودة في هذا الحساب.' }, 404);
+          isUpdate = true;
+        }
+        // إذا الـID غير موجود نهائياً نسمح بإنشاء حركة جديدة به داخل الحساب الحالي.
       }
       const row = {
         account_id: accountId, id, type: e.type, person: clampText(e.person, 120), amount: Number(e.amount), entry_date: e.date,
@@ -297,7 +308,7 @@ Deno.serve(async (req: Request) => {
       };
       const { error } = await supabase.from('tahweeshti_shared_entries').upsert(row, { onConflict: 'id' });
       if (error) throw error;
-      await audit(accountId, e.id ? 'update' : 'create', 'entry', id, `${e.type} ${e.amount}`, { person: e.person || '' });
+      await audit(accountId, isUpdate ? 'update' : 'create', 'entry', id, `${e.type} ${e.amount}`, { person: e.person || '' });
       return json({ ok: true, id });
     }
 
