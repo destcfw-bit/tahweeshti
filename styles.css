@@ -76,3 +76,23 @@ body.light-theme{--bg:#eef5f0;--bg2:#e5efe8;--panel:rgba(255,255,255,.86);--pane
 .empty-state>b{color:var(--text);font-size:14px}
 .empty-state>div{font-size:11px}
 .render-error{max-width:720px;margin:32px auto;text-align:center}
+
+/* V7.3 Monthly subscriptions */
+.subscription-hero{padding:22px;display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:16px}
+.subscription-hero h3{font-size:25px;margin:4px 0 7px}
+.subscription-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.subscription-summary>div{padding:14px;border:1px solid var(--line);background:var(--panel2);border-radius:16px;display:grid;gap:5px}
+.subscription-summary span{font-size:10px;color:var(--muted)}
+.subscription-summary b{font-size:17px}
+.subscription-next{display:grid;gap:7px}
+.subscription-card{position:relative;overflow:hidden}
+.subscription-card:before{content:'';position:absolute;inset:0 auto 0 0;width:3px;background:linear-gradient(var(--gold),var(--emerald));opacity:.7}
+.subscription-card.disabled{opacity:.62}
+.subscription-date{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:10px 0}
+.subscription-date span{font-size:10px;color:var(--muted)}
+.subscription-date b{font-size:12px;color:var(--gold)}
+.subscription-stats{margin-bottom:18px}
+.empty-cta{display:grid;justify-items:center;gap:12px}
+.subscription-dashboard .empty-state{min-height:90px}
+@media(max-width:900px){.subscription-summary{grid-template-columns:1fr 1fr}.subscription-hero{align-items:flex-start;flex-direction:column}}
+@media(max-width:520px){.subscription-summary{grid-template-columns:1fr}.subscription-hero .btn{width:100%}}
